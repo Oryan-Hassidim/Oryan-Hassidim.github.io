@@ -1,0 +1,473 @@
+---
+layout: base.njk
+title: מחשבון גימטריה
+lang: he
+dir: rtl
+description: מחשבון גימטריה מתקדם עם שיתוף קישור, מיון וגרירה.
+stylesheets:
+- style.css
+---
+
+<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/sort@3.x.x/dist/cdn.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<style>
+    .app {
+        display: grid;
+        width: fill;
+        height: fill;
+        font-size: large;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+        ::view-transition-group(*) {
+            animation-duration: 1s;
+        }
+
+        .buttons {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column-reverse;
+            gap: .5em;
+            place-items: center;
+
+            >* {
+                height: 4em;
+                width: 4em;
+                background: hsl(0, 0%, 82%);
+                border-width: 0px;
+                border-color: black;
+                border-style: solid;
+                cursor: pointer;
+            }
+
+            input[type="checkbox"] {
+                all: unset;
+                cursor: pointer;
+            }
+
+            button {
+                border-radius: 50%;
+                padding: .5em;
+                font-size: inherit;
+                font-family: inherit;
+            }
+
+            .show-settings-label {
+                height: 1.3em;
+                width: 1.3em;
+                display: flex;
+                place-items: center;
+                place-content: center;
+                cursor: pointer;
+                border-radius: 50%;
+                transition: background .3s;
+                font-size: 3em;
+
+                svg circle {
+                    transition: all .3s;
+                }
+            }
+
+            button {
+                svg {
+                    line {
+                        stroke-width: 3;
+                        stroke: black;
+                    }
+                }
+            }
+        }
+
+        .settings {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            translate: 0 100%;
+            transition: translate .5s;
+
+            display: flex;
+            flex-direction: column;
+        }
+
+        .list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-rows: auto auto auto;
+            column-gap: .5em;
+
+            article {
+                display: grid;
+                grid-row: span 3;
+                grid-template-rows: subgrid;
+                width: fill-available;
+                margin-bottom: 1em;
+                padding: .5em;
+                border-radius: .5em;
+                border-color: black;
+                border-width: 2px;
+                border-style: solid;
+
+                input[type="text"] {
+                    width: fill;
+                    font-size: inherit;
+                    font-family: inherit;
+                }
+
+                output:first-of-type {
+                    color: rgb(89, 89, 89);
+                    font-size: .7em;
+                }
+
+                output:last-of-type {
+                    font-size: 1.5em;
+                    font-weight: bold;
+                }
+
+                button {
+                    height: 2em;
+                    width: 2em;
+                    place-self: end;
+                    padding: 0;
+                    background: transparent;
+                    border-width: 0px;
+
+                    svg {
+                        overflow: visible;
+
+                        g {
+                            transform-origin: 20% 30%;
+                            transform: rotate(0deg);
+                            transition: transform .5s;
+                        }
+                    }
+
+                    svg:hover g {
+                        transform: rotate(-30deg);
+                    }
+                }
+            }
+        }
+
+        &:has(.show-settings:hover),
+        &:has(.show-settings:checked) {
+            .show-settings-label {
+                background: hsl(0, 0%, 27%);
+
+                svg {
+                    circle:first-of-type {
+                        stroke: white;
+                    }
+
+                    circle:not(:first-of-type) {
+                        fill: white;
+                    }
+                }
+            }
+
+            .settings {
+                translate: 0 0;
+            }
+        }
+    }
+</style>
+
+<main class="app" x-data="app">
+    <header class="topbar">
+        <h1>מחשבון גימטריה</h1>
+    </header>
+
+    <section class="list" aria-label="רשימת קטעים" x-sort="handleSort">
+        <template x-if="sections.length === 0">
+            <article class="empty">אין עדיין קטעים. לחצו על הכפתור + כדי להתחיל.</article>
+        </template>
+
+        <template x-for="(section, idx) in displayedSections" :key="section.id">
+            <article class="card" x-sort:item="section" :data-id="section.id"
+                :style="{ 'view-transition-name': 'card' + section.id }">
+                <input type="text" dir="rtl" placeholder="לדוגמה: אז שלום 123" x-model="section.text"
+                    :style="{ 'view-transition-name': 'input' + section.id }"></input>
+                <output x-text="evaluateWords(section.text)"
+                    :style="{ 'view-transition-name': 'sum1' + section.id }"></output>
+                <output x-text="evaluate(section)" :style="{ 'view-transition-name': 'sum2' + section.id }"></output>
+                <button type="button" title="הסר" aria-label="הסר" @click="remove(section.id)"
+                    :style="{ 'view-transition-name': 'remove' + section.id }">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <rect x="4" y="5" width="16" height="20" fill="black" />
+                        <g>
+                            <rect x="2" y="4" width="20" height="3" fill="black" />
+                            <circle cx="12" cy="3" r="2" fill="black" />
+                        </g>
+                    </svg>
+                </button>
+            </article>
+        </template>
+    </section>
+
+    <section class="buttons">
+        <button type="button" title="הוסף קטע" aria-label="הוסף קטע" @click="add()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                <line x1="12.5" y1="3" x2="12.5" y2="22" />
+                <line x1="3" y1="12.5" x2="22" y2="12.5" />
+            </svg>
+        </button>
+        <button type="button" title="שתף קישור" aria-label="שתף קישור">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                <circle cx="18" cy="6" r="4.7" />
+                <circle cx="5" cy="12" r="4.7" />
+                <circle cx="18" cy="20" r="4.7" />
+                <line x1="5" y1="12" x2="18" y2="6" />
+                <line x1="5" y1="12" x2="18" y2="20" />
+            </svg>
+        </button>
+        <label class="show-settings-label">
+            <input type="checkbox" class="show-settings" title="show-settings">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="5" fill="none" stroke="black" stroke-width="4" />
+                <circle cx="12" cy="5" r="2" fill="black" />
+                <circle cx="12" cy="19" r="2" fill="black" />
+                <circle cx="5" cy="12" r="2" fill="black" />
+                <circle cx="19" cy="12" r="2" fill="black" />
+                <circle cx="7" cy="7" r="2" fill="black" />
+                <circle cx="7" cy="17" r="2" fill="black" />
+                <circle cx="17" cy="17" r="2" fill="black" />
+                <circle cx="17" cy="7" r="2" fill="black" />
+            </svg>
+        </label>
+    </section>
+
+    <section class="settings">
+        <label>
+            <span>מיון:</span>
+            <div role="radiogroup" aria-label="מיון">
+                <label><input type="radio" name="sortMode" value="manual" x-model="sortMode"> ידני</label>
+                <label><input type="radio" name="sortMode" value="value" x-model="sortMode"> ערך גימטריה</label>
+            </div>
+        </label>
+
+        <label>
+            <span>אותיות סופיות:</span>
+            <div role="radiogroup" aria-label="אותיות סופיות">
+                <label><input type="radio" name="finalType" value="standard" x-model="finalType"> רגיל</label>
+                <label><input type="radio" name="finalType" value="hundreds" x-model="finalType"> מאות</label>
+            </div>
+        </label>
+    </section>
+
+</main>
+
+<script>
+    let gimatriaData = {
+        'א': 1,
+        'ב': 2,
+        'ג': 3,
+        'ד': 4,
+        'ה': 5,
+        'ו': 6,
+        'ז': 7,
+        'ח': 8,
+        'ט': 9,
+        'י': 10,
+        'כ': 20,
+        'ל': 30,
+        'מ': 40,
+        'נ': 50,
+        'ס': 60,
+        'ע': 70,
+        'פ': 80,
+        'צ': 90,
+        'ק': 100,
+        'ר': 200,
+        'ש': 300,
+        'ת': 400
+    };
+    let gimatriaFinalHundredsData = {
+        'ך': 500,
+        'ם': 600,
+        'ן': 700,
+        'ף': 800,
+        'ץ': 900
+    };
+    let gimatriaFinalsData = {
+        'ך': 20,
+        'ם': 40,
+        'ן': 50,
+        'ף': 80,
+        'ץ': 90
+    };
+
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('app', () => ({
+            sections: [],
+            finalType: 'standard', // 'standard' or 'hundreds'
+            sortMode: 'manual', // 'manual' or 'value'
+
+            init() {
+                // Load settings and sections from url params
+                const urlParams = new URLSearchParams(window.location.search);
+                const sectionsParam = urlParams.get('sections');
+                const finalTypeParam = urlParams.get('finalType');
+                const sortModeParam = urlParams.get('sortMode');
+                if (sectionsParam) {
+                    try {
+                        this.sections = decodeURIComponent(sectionsParam).split('~').map((s, idx) => {
+                            const text = s.replace(/_/g, ' ');
+                            return { id: idx, text: text, position: idx };
+                        });
+                    } catch (e) {
+                        console.error('Failed to parse sections from URL:', e);
+                    }
+                }
+                this.finalType = finalTypeParam || this.finalType;
+                this.sortMode = sortModeParam || this.sortMode;
+
+                this.$watch('sections', () => {
+                    this.updateUrl();
+                });
+                this.$watch('finalType', () => {
+                    this.updateUrl();
+                });
+                this.$watch('sortMode', () => {
+                    this.updateUrl();
+                });
+            },
+
+            updateUrl() {
+                const urlParams = new URLSearchParams();
+                urlParams.set('sections', this.sections
+                    .toSorted((a, b) => a.position - b.position)
+                    .map(s => s.text.replace(/ /g, '_')).join('~'));
+                // Only include settings that differ from defaults
+                if (this.finalType !== 'standard') {
+                    urlParams.set('finalType', this.finalType);
+                } else {
+                    urlParams.delete('finalType');
+                }
+                if (this.sortMode !== 'manual') {
+                    urlParams.set('sortMode', this.sortMode);
+                } else {
+                    urlParams.delete('sortMode');
+                }
+                const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
+                window.history.replaceState(null, '', newUrl);
+            },
+
+            add() {
+                const newSection = {
+                    id: this.sections.length > 0 ? Math.max(...this.sections.map(s => s.id)) + 1 : 0,
+                    text: '',
+                    position: this.sections.length
+                };
+                this.sections.push(newSection);
+            },
+
+            remove(id) {
+                // in view transition, set view-transition-name of the input to 'input' + id, then remove the section after a delay:
+                if (document.startViewTransition) {
+                    document.startViewTransition(() => {
+                        this.sections = this.sections
+                            .filter(s => s.id !== id)
+                            .map((s, idx) => ({ ...s, position: idx }));
+                    });
+                }
+            },
+
+            share() {
+                const url = window.location.href;
+                navigator.clipboard.writeText(url)
+                    .then(() => alert('קישור הועתק ללוח!'))
+                    .catch(() => alert('שגיאה בהעתקת הקישור'));
+            },
+
+            get displayedSections() {
+                return this.sections; // Placeholder - implement sorting/filtering based on settings
+            },
+
+            evaluate(section) {
+                return section.text.split(/\s+/).reduce((sum, word) => {
+                    return sum + this.evaluateWord(word);
+                }, 0);
+            },
+
+            evaluateWord(word) {
+                // Placeholder implementation - replace with actual gematria calculation
+                // if word is a number, return it as is
+                if (/^\d+$/.test(word)) {
+                    return parseInt(word, 10);
+                }
+                if (this.finalType === 'standard') {
+                    return word.split('').reduce((sum, char) => {
+                        return sum + (gimatriaData[char] || gimatriaFinalsData[char] || 0);
+                    }, 0);
+                } else {
+                    return word.split('').reduce((sum, char) => {
+                        return sum + (gimatriaData[char] || gimatriaFinalHundredsData[char] || 0);
+                    }, 0);
+                }
+            },
+
+            evaluateWords(text) {
+                const words = text.split(/\s+/)
+                    .filter(word => word.trim() !== '');
+                if (words.length <= 1) {
+                    return '';
+                }
+                return words.map(word => `${this.evaluateWord(word)}`).join(' + ');
+            },
+
+            handleSort(item, position) {
+                // update position field of the sections:
+                const oldPosition = item.position;
+                // update positions of sections that are between old and new position:
+                if (position < oldPosition) {
+                    this.sections.forEach(s => {
+                        if (s.position >= position && s.position < oldPosition) {
+                            s.position++;
+                        }
+                        item.position = position;
+                    });
+                } else {
+                    this.sections.forEach(s => {
+                        if (s.position > oldPosition && s.position <= position) {
+                            s.position--;
+                        }
+                        item.position = position;
+                    });
+                }
+                // log sorted sections:
+                console.log('Sorted:', this.sections.toSorted((a, b) => a.position - b.position).map(s => s.text));
+            }
+        }));
+    });
+</script>
+<!--<section class="settings">
+    <label>
+        <span>מיון</span>
+        <select x-model="sortMode" @change="persist()">
+            <option value="time">זמן הוספה</option>
+            <option value="value">ערך גימטריה</option>
+        </select>
+    </label>
+
+    <label>
+        <span>אותיות סופיות</span>
+        <select x-model="gematriaMode" @change="persist()">
+            <option value="standard">רגיל</option>
+            <option value="final">גדול</option>
+        </select>
+    </label>
+
+    <label>
+        <span>עם הכולל (הפרש 1)</span>
+        <select x-model="nearMode" @change="persist()">
+            <option value="almost">רקע כמעט זהה</option>
+            <option value="same">רקע זהה</option>
+        </select>
+    </label>
+
+    <label>
+        <span>עוצמת קרבה: <strong x-text="nearDelta"></strong></span>
+        <input type="range" min="2" max="30" step="1" x-model.number="nearDelta" @input="persist()">
+    </label>
+</section>-->
