@@ -115,6 +115,10 @@ stylesheets:
                     font-family: inherit;
                 }
 
+                output {
+                    place-self: start;
+                }
+
                 output:first-of-type {
                     color: rgb(89, 89, 89);
                     font-size: .7em;
@@ -212,7 +216,7 @@ stylesheets:
                 <line x1="3" y1="12.5" x2="22" y2="12.5" />
             </svg>
         </button>
-        <button type="button" title="שתף קישור" aria-label="שתף קישור">
+        <button type="button" title="שתף קישור" aria-label="שתף קישור" @click="share()">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
                 <circle cx="18" cy="6" r="4.7" />
                 <circle cx="5" cy="12" r="4.7" />
@@ -359,17 +363,26 @@ stylesheets:
                     text: '',
                     position: this.sections.length
                 };
-                this.sections.push(newSection);
+                if (document.startViewTransition) {
+                    document.startViewTransition(() => {
+                        this.sections.push(newSection);
+                    });
+                } else {
+                    this.sections.push(newSection);
+                }
             },
 
             remove(id) {
-                // in view transition, set view-transition-name of the input to 'input' + id, then remove the section after a delay:
                 if (document.startViewTransition) {
                     document.startViewTransition(() => {
                         this.sections = this.sections
                             .filter(s => s.id !== id)
                             .map((s, idx) => ({ ...s, position: idx }));
                     });
+                } else {
+                    this.sections = this.sections
+                        .filter(s => s.id !== id)
+                        .map((s, idx) => ({ ...s, position: idx }));
                 }
             },
 
