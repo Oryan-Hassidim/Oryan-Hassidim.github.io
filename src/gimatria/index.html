@@ -233,7 +233,8 @@ stylesheets:
         <h1>מחשבון גימטריה</h1>
     </header>
 
-    <section class="list" aria-label="רשימת קטעים" x-sort="handleSort" :style="{ '--colors-count': colors.length }"
+    <section class="list" aria-label="רשימת קטעים" x-sort="handleSort"
+        x-sort:config="{ delay: 200, delayOnTouchOnly: true }" :style="{ '--colors-count': colors.length }"
         :version="version">
         <template x-if="sections.length === 0">
             <article class="empty">אין עדיין קטעים. לחצו על הכפתור + כדי להתחיל.</article>
