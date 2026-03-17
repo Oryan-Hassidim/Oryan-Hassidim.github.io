@@ -432,7 +432,13 @@ stylesheets:
             },
 
             share() {
-                const url = window.location.href;
+                let url = window.location.href;
+                // replace hebrew percent-encoded values only!! with their decoded counterparts for more readability
+                const l = Array.from('אבגדהוזחטיכךלמםנןסעפףצץקרשת').map(c => [encodeURIComponent(c), c]);
+                l.forEach(([encoded, char]) => {
+                    url = url.replaceAll(encoded, char);
+                });
+
                 navigator.clipboard.writeText(url)
                     .then(() => alert('קישור הועתק ללוח!'))
                     .catch(() => alert('שגיאה בהעתקת הקישור'));
