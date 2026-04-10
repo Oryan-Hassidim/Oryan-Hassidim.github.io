@@ -1,9 +1,10 @@
 export default function (eleventyConfig) {
-    eleventyConfig.addPassthroughCopy("**/*.css");
-    eleventyConfig.addPassthroughCopy("**/*.js");
+    eleventyConfig.addPassthroughCopy("src/**/*.css");
+    eleventyConfig.addPassthroughCopy("src/**/*.js");
+    eleventyConfig.addPassthroughCopy("src/**/images/**/*.*");
 
-    eleventyConfig.addWatchTarget("**/*.css");
-    eleventyConfig.addWatchTarget("**/*.js");
+    eleventyConfig.addWatchTarget("src/**/*.css");
+    eleventyConfig.addWatchTarget("src/**/*.js");
 
     return {
         dir: {
