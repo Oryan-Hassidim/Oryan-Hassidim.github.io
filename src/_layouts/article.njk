@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="{{ lang or 'he' }}" dir="{{ dir or 'rtl' }}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    {% if description %}
+        <meta name="description" content="{{ description }}">
+    {% endif %}
+    {% if favicon %}
+        <link rel="icon" href="{{ favicon }}">
+    {% endif %}
+    {% if stylesheets %}
+        {% for stylesheet in stylesheets %}
+            <link rel="stylesheet" href="{{ stylesheet }}">
+        {% endfor %}
+    {% endif %}
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@300..900&display=swap" rel="stylesheet">
+    <style>
+        html {
+            font-family: "Frank Ruhl Libre", serif;
+            font-optical-sizing: auto;
+            font-weight: 400;
+            font-style: normal;
+
+            /* line-height: 1.6;
+            margin: 20px; */
+            body {
+                display: grid;
+                grid-template-columns: 1fr minmax(0, 70ch) 1fr;
+
+                main {
+                    grid-column: 2/3;
+                    text-align: justify;
+
+                    img {
+                        height: 25ch;
+                    }
+                }
+
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+    <main>
+        <h1>{{ title }}</h1>
+        
+    {% if downloads.length > 0 %}
+        <div class="article-downloads">
+            <h3>הורדת המאמר:</h3>
+            <ul>
+            {% for file in downloads %}
+                <li><a href="{{ page.url }}{{ file }}" download>{{ file }}</a></li>
+            {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+    
+    {{ content | safe }}
+</body>
+
+</html>

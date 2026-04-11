@@ -1,0 +1,17 @@
+---
+layout: base.njk
+tags: []
+eleventyExcludeFromCollections: true
+title: כל המאמרים
+---
+
+<h1>המאמרים שלי</h1>
+
+<ul>
+    {% for post in collections.article %}
+    <li>
+        {# מציג את כותרת המאמר, ואם אין כותרת מציג את שם התיקייה/קובץ #}
+        <a href="{{ post.url }}">{{ post.data.title | default(post.fileSlug) }}</a>
+    </li>
+    {% endfor %}
+</ul>

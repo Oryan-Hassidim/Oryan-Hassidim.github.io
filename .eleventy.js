@@ -3,6 +3,9 @@ export default function (eleventyConfig) {
     eleventyConfig.addPassthroughCopy("src/**/*.js");
     eleventyConfig.addPassthroughCopy("src/**/images/**/*.*");
 
+    eleventyConfig.addPassthroughCopy("src/**/*.docx");
+    eleventyConfig.addPassthroughCopy("src/**/*.pdf");
+
     eleventyConfig.addWatchTarget("src/**/*.css");
     eleventyConfig.addWatchTarget("src/**/*.js");
 
