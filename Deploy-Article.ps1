@@ -50,7 +50,7 @@ finally {
 # 4. המרה ל-HTML באמצעות Pandoc
 Write-Host "Converting to HTML using Pandoc..." -ForegroundColor Cyan
 # משתמשים ב-extract-media כדי לחלץ תמונות (אם יש)
-pandoc "$NewDocPath" -o "$HtmlPath" --toc --toc-depth=2 --extract-media="$DestDir/images" --lua-filter="remove-spans.lua"
+pandoc "$NewDocPath" -o "$HtmlPath" --toc --toc-depth=2 --extract-media="$DestDir" --lua-filter="remove-spans.lua"
 
 # 5. עיבוד ה-HTML (מחיקת spans, סידור תמונות והוספת Front Matter)
 Write-Host "Processing HTML..." -ForegroundColor Cyan
