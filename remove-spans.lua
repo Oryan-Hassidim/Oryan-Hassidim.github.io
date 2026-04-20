@@ -11,3 +11,9 @@ function Span(el)
   -- אחרת, נחזיר רק את התוכן הפנימי (הטקסט עצמו) בלי תגית ה-<span> העוטפת
   return el.content
 end
+
+function Image(el)
+  -- remove styles from images
+  el.attributes['style'] = nil
+  return el
+end
