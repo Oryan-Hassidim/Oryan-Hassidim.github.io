@@ -49,12 +49,14 @@ finally {
 
 # 4. המרה ל-HTML באמצעות Pandoc
 Write-Host "Converting to HTML using Pandoc..." -ForegroundColor Cyan
+# שינוי תיקיית העבודה ליעד כדי ש-Pandoc ישמור את התמונות במיקום הנכון
+Set-Location -Path $DestDir
 # משתמשים ב-extract-media כדי לחלץ תמונות (אם יש)
-pandoc "$NewDocPath" -o "$HtmlPath" --toc --toc-depth=2 --extract-media="$DestDir" --lua-filter="remove-spans.lua"
+pandoc "$DocFile" -o "index.html" --toc --lua-filter="../../../remove-spans.lua" --template="../../../pandoc_template.html"
 
 # 5. עיבוד ה-HTML (מחיקת spans, סידור תמונות והוספת Front Matter)
 Write-Host "Processing HTML..." -ForegroundColor Cyan
-$HtmlContent = Get-Content -Path $HtmlPath -Raw -Encoding UTF8
+$HtmlContent = Get-Content -Path "index.html" -Raw -Encoding UTF8
 
 # Pandoc שומר תמונות בתיקיית 'media' כברירת מחדל. 
 # נשנה את שמה ל-'images' כדי להתאים למבנה שלך, ונעדכן את הנתיבים ב-HTML.
@@ -75,6 +77,7 @@ title: "$Title"
 
 # שרשור ושמירה חזרה לקובץ
 $FinalContent = $FrontMatter + $HtmlContent
-Set-Content -Path $HtmlPath -Value $FinalContent -Encoding UTF8
+Set-Content -Path "index.html" -Value $FinalContent -Encoding UTF8
 
 Write-Host "Done! Article '$Title' successfully deployed." -ForegroundColor Green
+Set-Location -Path (Split-Path -Path $MyInvocation.MyCommand.Path) # חזרה לתיקיית הסקריפט

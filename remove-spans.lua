@@ -2,7 +2,7 @@
 function Span(el)
   -- אם יש ל-span הגדרת כיווניות (rtl או ltr), נשמור עליו (קריטי לעברית/אנגלית)
   -- if el.attributes['dir'] then
-  --   return el
+    -- return el
   -- end
   
   -- אם הגדרת לוורד מחלקות (classes) שאתה כן רוצה לשמור, אפשר לבדוק גם אותן:
