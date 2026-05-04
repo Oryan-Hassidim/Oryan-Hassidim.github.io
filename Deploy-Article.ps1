@@ -52,7 +52,7 @@ Write-Host "Converting to HTML using Pandoc..." -ForegroundColor Cyan
 # שינוי תיקיית העבודה ליעד כדי ש-Pandoc ישמור את התמונות במיקום הנכון
 Set-Location -Path $DestDir
 # משתמשים ב-extract-media כדי לחלץ תמונות (אם יש)
-pandoc "$DocFile" -o "index.html" --toc --lua-filter="../../../remove-spans.lua" --template="../../../pandoc_template.html"
+pandoc "$DocFile" -o "index.html" --toc --lua-filter="../../../remove-spans.lua" --template="../../../pandoc_template.html" -extract-media
 
 # 5. עיבוד ה-HTML (מחיקת spans, סידור תמונות והוספת Front Matter)
 Write-Host "Processing HTML..." -ForegroundColor Cyan
